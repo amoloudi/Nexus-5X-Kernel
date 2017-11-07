@@ -37,8 +37,6 @@ main()
     fclose(stat_f2);
   }
   
-  printf("%lu\n", cpu_time2 - cpu_time1);
-  printf("%lu\n", total_time2 - total_time1);
   //CPU usage = CPU processing clocks / Total clocks
   printf ("CPU usage: %.2f%%\n", 100.0 * (cpu_time2 - cpu_time1) / (total_time2 - total_time1));
 }
