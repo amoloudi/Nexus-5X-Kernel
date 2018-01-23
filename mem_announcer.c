@@ -7,48 +7,50 @@
 
 MODULE_LICENSE("Gibe Moni Ples");
 
-int prevs[5000];
+int prevs[5000] = {0};
 int running = 1;
 
-void dfs(struct task_struct *task, int calc)
-{
-  struct task_struct *task_next;
-  struct list_head *list;
+struct task_struct* loop_thread;
 
-  list_for_each(list, &task->children) 
+void tasks_foreach_func(int calc)
+{
+  struct task_struct *task;
+  for_each_process(task)
   {
-    task_next = list_entry(list, struct task_struct, sibling);
     if(!calc)
     {
-      prevs[task_next->pid] = task_next->mm->total_vm;
+      prevs[task->pid] = task->mm->total_vm;
     }
     else
     {
-      if(task_next->mm->total_vm != prevs[task_next->pid])
+      if(!prevs[task->pid])
       {
-        if(task_next->mm->total_vm > prevs[task_next->pid])
+        if(task->mm->total_vm != prevs[task->pid])
         {
-          printk(KERN_INFO "pid: %d | allocated: %d\n", task_next->pid, task_next->mm->total_vm - prevs[task_next->pid]);
-        }
-        else
-        {
-          printk(KERN_INFO "pid: %d | freed: %d\n", task_next->pid, prevs[task_next->pid] - task_next->mm->total_vm);
+          if(task->mm->total_vm > prevs[task->pid])
+          {
+            printk(KERN_INFO "pid: %d | pname: %s | state: %ld | allocated: %lu\n", task->pid, task->comm, task->state, task->mm->total_vm - prevs[task->pid]);
+          }
+          else
+          {
+            printk(KERN_INFO "pid: %d | pname: %s | state: %ld | freed: %lu\n", task->pid, task->comm, task->state, prevs[task->pid] - task->mm->total_vm);
+          }  
         }
       }
     }
-    dfs(task_next, calc);
-  }  
+  }
 }
 
 int while_func(void *data)
 {
   while(running)
   {
-    dfs(&init_task, 0);
+    tasks_foreach_func(0);
     ssleep(1);
-    dfs(&init_task, 1);
+    tasks_foreach_func(1);
     ssleep(10);
   }
+  return 0;
 }
 
 static int __init module_init_func(void)
@@ -65,7 +67,6 @@ static void __exit module_exit_func(void)
   kthread_stop(loop_thread);
   ssleep(1);
   printk(KERN_INFO "Lay thine eyes upon it and thou shalt see that it will be barren.\n");
-  return 0;
 }
 
 module_init(mm_reporter_init);
