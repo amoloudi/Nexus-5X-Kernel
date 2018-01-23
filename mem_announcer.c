@@ -29,11 +29,11 @@ void tasks_foreach_func(int calc)
         {
           if(task->mm->total_vm > prevs[task->pid])
           {
-            printk(KERN_INFO "pid: %d | pname: %s | state: %ld | allocated: %lu\n", task->pid, task->comm, task->state, task->mm->total_vm - prevs[task->pid]);
+            printk(KERN_INFO "pid: %d | allocated: %lu\n", task->pid, task->comm, task->state, task->mm->total_vm - prevs[task->pid]);
           }
           else
           {
-            printk(KERN_INFO "pid: %d | pname: %s | state: %ld | freed: %lu\n", task->pid, task->comm, task->state, prevs[task->pid] - task->mm->total_vm);
+            printk(KERN_INFO "pid: %d | freed: %lu\n", task->pid, task->comm, task->state, prevs[task->pid] - task->mm->total_vm);
           }  
         }
       }
